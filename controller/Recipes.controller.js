@@ -2,21 +2,22 @@ const express = require("express");
 const fs = require("fs");
 const multer = require("multer");
 const RecipeModel = require("../model/Recipe.model");
+
 const router = express.Router();
 
-// Setup multer for file upload
+// Configure multer for file uploads
 const upload = multer({ dest: "uploads/" });
 
 // Fetch all recipes
 router.get("/", async (req, res) => {
   try {
     const results = await RecipeModel.find();
-    return res.status(200).json({
+    res.status(200).json({
       message: "Recipes fetched successfully",
       data: results,
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: "Request failed",
       error: error.message,
     });
@@ -28,16 +29,14 @@ router.get("/:recipeId", async (req, res) => {
   try {
     const recipe = await RecipeModel.findById(req.params.recipeId);
     if (!recipe) {
-      return res.status(404).json({
-        message: "Recipe not found",
-      });
+      return res.status(404).json({ message: "Recipe not found" });
     }
-    return res.status(200).json({
+    res.status(200).json({
       message: "Recipe fetched successfully",
       data: recipe,
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: "Request failed",
       error: error.message,
     });
@@ -51,20 +50,18 @@ router.post("/createRecipe", async (req, res) => {
 
     const existingRecipe = await RecipeModel.findOne({ name });
     if (existingRecipe) {
-      return res.status(400).json({
-        message: "Recipe with this name already exists.",
-      });
+      return res.status(400).json({ message: "Recipe with this name already exists." });
     }
 
     const newRecipe = new RecipeModel({ name, description, ingredients });
     const savedRecipe = await newRecipe.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Recipe created successfully",
       result: savedRecipe,
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: "Request failed",
       error: error.message,
     });
@@ -74,23 +71,16 @@ router.post("/createRecipe", async (req, res) => {
 // Update a recipe by ID
 router.put("/updateRecipe/:recipeId", async (req, res) => {
   try {
-    const recipeId = req.params.recipeId.trim();
-    const updatedRecipe = await RecipeModel.findByIdAndUpdate(
-      recipeId,
-      req.body,
-      { new: true }
-    );
+    const updatedRecipe = await RecipeModel.findByIdAndUpdate(req.params.recipeId, req.body, { new: true });
     if (!updatedRecipe) {
-      return res.status(404).json({
-        message: "Recipe not found",
-      });
+      return res.status(404).json({ message: "Recipe not found" });
     }
-    return res.status(200).json({
+    res.status(200).json({
       message: "Recipe updated successfully",
       data: updatedRecipe,
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: "Request failed",
       error: error.message,
     });
@@ -100,18 +90,13 @@ router.put("/updateRecipe/:recipeId", async (req, res) => {
 // Delete a recipe by ID
 router.delete("/deleteRecipe/:recipeId", async (req, res) => {
   try {
-    const recipeId = req.params.recipeId.trim();
-    const deletedRecipe = await RecipeModel.findByIdAndDelete(recipeId);
+    const deletedRecipe = await RecipeModel.findByIdAndDelete(req.params.recipeId);
     if (!deletedRecipe) {
-      return res.status(404).json({
-        message: "Recipe not found",
-      });
+      return res.status(404).json({ message: "Recipe not found" });
     }
-    return res.status(200).json({
-      message: "Recipe deleted successfully",
-    });
+    res.status(200).json({ message: "Recipe deleted successfully" });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: "Failed to delete recipe",
       error: error.message,
     });
@@ -121,8 +106,7 @@ router.delete("/deleteRecipe/:recipeId", async (req, res) => {
 // Import recipes from a JSON file
 router.post("/import", upload.single("file"), async (req, res) => {
   try {
-    const filePath = req.file.path;
-    const jsonData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const jsonData = JSON.parse(fs.readFileSync(req.file.path, "utf8"));
     await RecipeModel.insertMany(jsonData);
     res.status(200).json({ message: "Data imported successfully!" });
   } catch (error) {

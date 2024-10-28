@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// Use environment variables to set your MongoDB URI
+// Use environment variables to set you//localhost:3001/r MongoDB URI
 const mongoDBURI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/recipes/recipes";
 
